@@ -1,11 +1,13 @@
 ﻿:root {
-  --ink:#121a2e;--mid:#4a5070;--muted:#8890b0;--line:#e2e5f0;
-  --bg:#f4f5fb;--white:#fff;
-  --red:#c0392b;--blue:#1a6fb5;--green:#1e8c5a;--orange:#d4670a;--purple:#6b3fa0;--teal:#0f8080;
-  --tag-bg:#eef1ff;--tag-fg:#3344bb;
+  --ink:#2a1c12;--mid:#5b4632;--muted:#8d7660;--line:#2a1c12;
+  --bg:#f5ecd8;--white:#fffaf0;
+  --red:#e8432c;--blue:#2f6fce;--green:#3f9a52;--orange:#ef8b1e;--purple:#8b5cc9;--teal:#1f9c93;
+  --tag-bg:#ffe3c2;--tag-fg:#a3450f;
+  --px:3px; /* ドット絵風の輪郭太さ */
 }
 *{box-sizing:border-box;margin:0;padding:0}
-body{font-family:'Hiragino Kaku Gothic ProN','Noto Sans JP',sans-serif;background:var(--bg);color:var(--ink);min-height:100vh;font-size:14px}
+*,*::before,*::after{border-radius:0!important}
+body{font-family:'DotGothic16','Hiragino Kaku Gothic ProN','Noto Sans JP',sans-serif;background:var(--bg);color:var(--ink);min-height:100vh;font-size:14px;image-rendering:pixelated}
 
 header{background:var(--ink);height:52px;display:flex;align-items:center;padding:0 20px;gap:12px;position:sticky;top:0;z-index:200}
 .hlogo{display:flex;align-items:center;gap:10px;color:#fff;font-weight:800;font-size:14px;white-space:nowrap}
@@ -250,14 +252,14 @@ select:focus{border-color:var(--blue)}
    差し替えるだけで大半の画面が切り替わる。白が直書きされた箇所のみ
    個別に上書き（!importantはインラインstyleより優先させるため） */
 html[data-theme="dark"]{
-  --ink:#e6e9f5;      /* 文字色：ほぼ白 */
-  --mid:#a9b1cc;
-  --muted:#767e9e;
-  --line:#32395280;   /* 罫線：暗い紺（半透明） */
-  --bg:#12162a;       /* 背景：濃紺 */
-  --white:#1b2140;    /* カードやパネルの面：やや明るい紺 */
-  --red:#e0685e;--blue:#559fe0;--green:#3aa878;--orange:#e08a3a;--purple:#a37fd6;--teal:#3aa5a5;
-  --tag-bg:#262e52;--tag-fg:#9fadff;
+  --ink:#f0e6d2;      /* 文字色：クリーム */
+  --mid:#c9bba0;
+  --muted:#8f8267;
+  --line:#f0c78a;     /* 罫線：暖色のドット輪郭 */
+  --bg:#171008;       /* 背景：焦げ茶（夜のドット絵キャンバス） */
+  --white:#241a10;    /* カードやパネルの面：やや明るい焦げ茶 */
+  --red:#f0685a;--blue:#6aa8f0;--green:#5cc07e;--orange:#f0a23a;--purple:#b493e0;--teal:#4ac0b5;
+  --tag-bg:#3a2a14;--tag-fg:#f0c78a;
   color-scheme: dark; /* スクロールバー等のブラウザ標準部品も暗く */
 }
 
@@ -296,3 +298,51 @@ html[data-theme="dark"] .leaflet-popup-content-wrapper,
 html[data-theme="dark"] .leaflet-popup-tip{background:var(--white);color:var(--ink)}
 html[data-theme="dark"] .leaflet-control-attribution{background:rgba(18,22,42,.8)!important;color:var(--muted)}
 html[data-theme="dark"] .leaflet-control-attribution a{color:var(--mid)}
+
+/* ═══════════════════════════════════════════════════
+   ドット絵（ピクセルアート）テーマ
+   角丸を全廃し、輪郭線とオフセット影で「打ち込んだような」
+   立体感を出す。ボタンは押すと影が消えて凹む演出。
+   ═══════════════════════════════════════════════════ */
+body{background-image:repeating-conic-gradient(var(--bg) 0% 25%,color-mix(in srgb,var(--bg) 92%,var(--ink)) 0% 50%);background-size:4px 4px}
+
+header{border-bottom:var(--px) solid var(--orange)}
+.hlogo-sq{border:2px solid var(--ink);box-shadow:2px 2px 0 var(--ink)}
+
+.card,.mcard{border-width:2px;box-shadow:4px 4px 0 var(--ink);transition:transform .08s,box-shadow .08s}
+.card:hover,.mcard:hover{transform:translate(-2px,-2px);box-shadow:6px 6px 0 var(--ink)}
+.card.selected{box-shadow:4px 4px 0 var(--blue)}
+.card::after,.mcard::after{width:6px}
+
+.cbtn,.dpl,.sbtn,.vbtn,.freset,.lp-io-btn,.tab-btn,.aitb,#csvBtn,#mCsvBtn,.mcard-link,.lo-retry{
+  border-width:2px!important;box-shadow:3px 3px 0 var(--ink);transition:transform .06s,box-shadow .06s
+}
+.cbtn:active,.dpl:active,.sbtn:active,.vbtn:active,.freset:active,.lp-io-btn:active,.tab-btn:active,.aitb:active,#csvBtn:active,#mCsvBtn:active,.mcard-link:active{
+  transform:translate(3px,3px);box-shadow:0 0 0 var(--ink)
+}
+.vtog{border:2px solid var(--ink);background:var(--white);padding:2px}
+.vbtn.active{box-shadow:none!important}
+.tab-bar{border-bottom:var(--px) solid var(--ink)}
+.tab-btn.active{border-bottom-width:var(--px)}
+
+select,.sw input,#wsBtnLabel,#usBtnLabel,#udsBtnLabel,#bsBtnLabel,#listFilterSel,#mWard,#mBureau,#mPolicy,#mCriteria,#newListName{
+  border-width:2px!important;box-shadow:2px 2px 0 var(--ink) inset
+}
+
+.dp{border-left-width:2px;box-shadow:-4px 0 0 var(--ink)}
+#dashPanel,#listPanel{border-left-width:2px;box-shadow:-4px 0 0 var(--ink)}
+#updatePopup{border-width:2px;box-shadow:4px 4px 0 var(--ink)}
+#circlePanel{border-width:2px!important;box-shadow:3px 3px 0 var(--ink)}
+
+.tag,.ct,.mcard-tag,.dash-kpi-item{border:1.5px solid var(--ink)}
+#bellDot{box-shadow:1px 1px 0 var(--ink)}
+
+/* スピナーをカクカク8コマ回転にしてドット絵らしく */
+.sp,.lo-sp{animation-timing-function:steps(8)!important}
+
+.lo-crab{width:72px;height:64px;margin:0 auto 16px;animation:crabWiggle .5s steps(2) infinite}
+@keyframes crabWiggle{from{transform:rotate(-4deg)}to{transform:rotate(4deg)}}
+
+@media (max-width:760px){
+  body{background-size:3px 3px}
+}
