@@ -857,6 +857,7 @@ function openP(f){
   const webLabel=f.url?'🌐 公式サイト':'🌐 公式サイトを検索';
   document.getElementById('dpls').innerHTML=`
     <a class="dpl bp" href="${BASE}${f.source}" target="_blank" rel="noopener">📄 一覧PDF</a>
+    ${f.shiteikanri?`<a class="dpl" href="${f.shiteikanri.url}" target="_blank" rel="noopener" style="color:var(--green);border-color:var(--green)">🏢 指定管理（${f.shiteikanri.year}）</a>`:''}
     ${karteUrl(f)?`<a class="dpl" href="${karteUrl(f)}" target="_blank" rel="noopener" style="color:var(--purple);border-color:var(--purple)">📋 資産カルテ（${f.kartePage}ページ）</a>`:''}
     <a class="dpl bm" href="${webUrl}" target="_blank" rel="noopener">${webLabel}</a>
     <a class="dpl bm" href="https://maps.google.com/maps?q=${a}" target="_blank" rel="noopener">🗺 Googleマップ</a>
@@ -1722,13 +1723,16 @@ function showAddToListMenu(fid, btn){
 async function loadAndInit() {
   const ov = document.getElementById('loadingOverlay');
   try {
-    const [f, m, w] = await Promise.all([
+    const [f, m, w, sk] = await Promise.all([
       fetch('facilities.json').then(r => { if (!r.ok) throw new Error('facilities.json の取得に失敗'); return r.json(); }),
       fetch('miryochi.json').then(r => { if (!r.ok) throw new Error('miryochi.json の取得に失敗'); return r.json(); }),
-      fetch('osaka_wards.geojson').then(r => r.ok ? r.json() : null).catch(() => null) // 区境界（取得失敗でも動作継続）
+      fetch('osaka_wards.geojson').then(r => r.ok ? r.json() : null).catch(() => null), // 区境界（取得失敗でも動作継続）
+      fetch('shiteikanri.json').then(r => r.ok ? r.json() : []).catch(() => []) // 指定管理報告書リンク（取得失敗でも動作継続）
     ]);
     FACILITIES = f; MIRYOCHI = m; WARDS_GEOJSON = w;
     FACILITIES.forEach(fac=>{ fac.useDetail=normalizeUseDetail(fac.useDetail); });
+    const shiteikanriById = new Map(sk.map(s => [s.id, s]));
+    FACILITIES.forEach(fac=>{ const s = shiteikanriById.get(fac.id); if (s) fac.shiteikanri = { year: s.year, url: s.url }; });
     FACILITIES.forEach(fac=>{ const k=normAddr(fac.addr); addrCount[k]=(addrCount[k]||0)+1; });
     init(); computeMiryochiWards(); buildMiryochiDropdowns();
     // 読み込み完了 → オーバーレイをフェードアウトして削除
