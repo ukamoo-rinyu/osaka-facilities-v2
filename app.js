@@ -737,6 +737,7 @@ function renderCard(f){
   const complexBadge=isComplex?`<span style="font-size:10px;font-weight:700;padding:2px 6px;border-radius:4px;background:#fff3e0;color:#e65100;border:1px solid #ffcc80;white-space:nowrap">🏢 複合</span>`:'';
   const privateBadge=hasPrivate?`<span style="font-size:10px;font-weight:700;padding:2px 6px;border-radius:4px;background:#fff8f0;color:#d4670a;border:1px solid #ffd0a0;white-space:nowrap">🏪 民間複合</span>`:'';
   const rentalBadge=f.isRental?`<span style="font-size:10px;font-weight:700;padding:2px 6px;border-radius:4px;background:#f0f4ff;color:#2255cc;border:1px solid #aabcee;white-space:nowrap">🔑 賃借</span>`:'';
+  const privateUseBadge=f.privateUse?`<span style="font-size:10px;font-weight:700;padding:2px 6px;border-radius:4px;background:#fdf0f6;color:#b8266b;border:1px solid #f0b8d0;white-space:nowrap">🏠 民間使用</span>`:'';
   if(state.view==='list'){
     return `<div class="card${chk?' sel-active':''}" data-id="${f.id}" onclick="selF(${f.id})" style="padding:10px 14px;--uc:${c}">
       <div class="cli">
@@ -744,7 +745,7 @@ function renderCard(f){
         <div style="width:4px;height:36px;background:${c};border-radius:2px;flex-shrink:0"></div>
         <div class="cln">${f.name}<br><span style="font-size:10px;font-weight:400;color:var(--muted)">${f.addr}</span></div>
         <div class="clm">
-          ${complexBadge}${privateBadge}${rentalBadge}
+          ${complexBadge}${privateBadge}${rentalBadge}${privateUseBadge}
           <div class="cls"><strong>${f.area>0?f.area.toLocaleString():'—'}</strong>㎡</div>
           <div class="cls"><strong>${f.year||'—'}</strong>年</div>
           <span class="tag tw" style="align-self:center">${f.ward}</span>
@@ -768,11 +769,11 @@ function renderCard(f){
       <div class="ct" style="background:${b};color:${c};flex-shrink:0">${f.use}</div>
     </div>
     <div class="ca" style="margin-bottom:6px"><span>📍</span>${f.addr}</div>
-    <div class="cs" style="margin-bottom:${complexBadge||privateBadge||rentalBadge?'6px':'0'}">
+    <div class="cs" style="margin-bottom:${complexBadge||privateBadge||rentalBadge||privateUseBadge?'6px':'0'}">
       <div><div class="sv">${f.area>0?f.area.toLocaleString():'—'}</div><div class="su">延床面積（㎡）</div></div>
       <div><div class="sv">${age!==null?`築${age}年`:'—'}</div><div class="su">${f.year?`${f.year}年度築`:''}</div></div>
     </div>
-    ${complexBadge||privateBadge||rentalBadge?`<div style="display:flex;gap:4px;flex-wrap:wrap">${complexBadge}${privateBadge}${rentalBadge}</div>`:''}
+    ${complexBadge||privateBadge||rentalBadge||privateUseBadge?`<div style="display:flex;gap:4px;flex-wrap:wrap">${complexBadge}${privateBadge}${rentalBadge}${privateUseBadge}</div>`:''}
   </div>`;
 }
 
@@ -864,6 +865,22 @@ function openP(f){
     ${f.lat&&f.lng?`<a class="dpl" style="color:var(--teal);border-color:var(--teal)" href="https://www.mapnavi.city.osaka.lg.jp/osakacity/Map?mid=51&ShowFidOnly=1&mps=10000&mtp=dm28&mpx=${f.lng}&mpy=${f.lat}&gprj=3" target="_blank" rel="noopener">🏗 用途地域・容積率</a>`:''}
     ${f.lat&&f.lng?`<a class="dpl" style="color:var(--teal);border-color:var(--teal)" href="https://www.mapnavi.city.osaka.lg.jp/osakacity/Map?mid=53&ShowFidOnly=1&mps=10000&mtp=dm28&mpx=${f.lng}&mpy=${f.lat}&gprj=3" target="_blank" rel="noopener">🏘 その他地域地区</a>`:''}
   `;
+
+  // ── 民間使用（市が家主、建物を貸して民間が事業運営）──
+  const privateUseSec = document.getElementById('privateUseSec');
+  if(f.privateUse){
+    privateUseSec.style.display = '';
+    document.getElementById('privateUseBody').innerHTML = `
+      <div style="font-size:11px;color:var(--muted);margin-bottom:4px">
+        運営法人：<strong style="color:var(--ink)">${f.privateUse.operator}</strong>
+        <span style="margin-left:6px;font-size:10px;font-weight:700;padding:1px 6px;border-radius:3px;background:${f.privateUse.confidence==='確定'?'#fdeaea':'#fff8e0'};color:${f.privateUse.confidence==='確定'?'#c0392b':'#a67c00'};border:1px solid ${f.privateUse.confidence==='確定'?'#f0b8b8':'#e8d590'}">${f.privateUse.confidence}</span>
+      </div>
+      <div style="font-size:12px;line-height:1.6;color:var(--ink);margin-bottom:6px">${f.privateUse.desc}</div>
+      ${f.privateUse.source?`<a href="${f.privateUse.source}" target="_blank" rel="noopener" style="font-size:10px;color:var(--blue)">🔗 情報源</a>`:''}
+    `;
+  } else {
+    privateUseSec.style.display = 'none';
+  }
 
   // ── 民間複合施設（自施設・同一住所の市有施設と同名のものを除外） ──
   const privateSec = document.getElementById('privateSec');
@@ -1491,6 +1508,7 @@ function updateDash(data){
 
 // ── 更新情報 ──
 const UPDATE_HISTORY=[
+  {date:'2026-07-05',text:'指定管理ではなく実質民間が事業運営している市有福祉施設13件に「🏠 民間使用」バッジと詳細解説を追加'},
   {date:'2026-06-29',text:'用途地域・容積率リンク、その他地域地区リンクを詳細パネルに追加'},
   {date:'2026-06-29',text:'図書館フィルターを「地域図書館」「中央図書館」に統合'},
   {date:'2026-06-29',text:'地図全件表示時の初期ズーム調整（大阪市役所中心）'},
