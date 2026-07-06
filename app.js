@@ -737,10 +737,7 @@ function renderCard(f){
   const chkHtml=`<input type="checkbox" data-chk="${f.id}" ${chk?'checked':''} onclick="event.stopPropagation();toggleSel(${f.id},this.checked)" style="width:15px;height:15px;cursor:pointer;accent-color:var(--blue);flex-shrink:0">`;
   const listAddBtn=`<button class="cbtn" style="color:var(--purple);border-color:var(--purple);padding:2px 6px;font-size:10px;flex-shrink:0" onclick="event.stopPropagation();showAddToListMenu(${f.id},this)" title="リストに追加">📋+</button>`;
   const isComplex=addrCount[normAddr(f.addr)]>1;
-  const privateFiltered0=(f.privateFacilities||[]).filter(p=>p.name!==f.name);
-  const hasPrivate=privateFiltered0.length>0;
   const complexBadge=isComplex?`<span style="font-size:10px;font-weight:700;padding:2px 6px;border-radius:4px;background:#fff3e0;color:#e65100;border:1px solid #ffcc80;white-space:nowrap">🏢 複合</span>`:'';
-  const privateBadge=hasPrivate?`<span style="font-size:10px;font-weight:700;padding:2px 6px;border-radius:4px;background:#fff8f0;color:#d4670a;border:1px solid #ffd0a0;white-space:nowrap">🏪 民間複合</span>`:'';
   const rentalBadge=f.isRental?`<span style="font-size:10px;font-weight:700;padding:2px 6px;border-radius:4px;background:#f0f4ff;color:#2255cc;border:1px solid #aabcee;white-space:nowrap">🔑 賃借</span>`:'';
   const privateUseBadge=f.privateUse?`<span style="font-size:10px;font-weight:700;padding:2px 6px;border-radius:4px;background:#fdf0f6;color:#b8266b;border:1px solid #f0b8d0;white-space:nowrap">🏠 民間使用</span>`:'';
   const rts=ROOM_TYPE_STYLE[f.roomType];
@@ -752,7 +749,7 @@ function renderCard(f){
         <div style="width:4px;height:36px;background:${c};border-radius:2px;flex-shrink:0"></div>
         <div class="cln">${f.name}<br><span style="font-size:10px;font-weight:400;color:var(--muted)">${f.addr}</span></div>
         <div class="clm">
-          ${complexBadge}${privateBadge}${rentalBadge}${privateUseBadge}${roomTypeBadge}
+          ${complexBadge}${rentalBadge}${privateUseBadge}${roomTypeBadge}
           <div class="cls"><strong>${f.area>0?f.area.toLocaleString():'—'}</strong>㎡</div>
           <div class="cls"><strong>${f.year||'—'}</strong>年</div>
           <span class="tag tw" style="align-self:center">${f.ward}</span>
@@ -776,11 +773,11 @@ function renderCard(f){
       <div class="ct" style="background:${b};color:${c};flex-shrink:0">${f.use}</div>
     </div>
     <div class="ca" style="margin-bottom:6px"><span>📍</span>${f.addr}</div>
-    <div class="cs" style="margin-bottom:${complexBadge||privateBadge||rentalBadge||privateUseBadge||roomTypeBadge?'6px':'0'}">
+    <div class="cs" style="margin-bottom:${complexBadge||rentalBadge||privateUseBadge||roomTypeBadge?'6px':'0'}">
       <div><div class="sv">${f.area>0?f.area.toLocaleString():'—'}</div><div class="su">延床面積（㎡）</div></div>
       <div><div class="sv">${age!==null?`築${age}年`:'—'}</div><div class="su">${f.year?`${f.year}年度築`:''}</div></div>
     </div>
-    ${complexBadge||privateBadge||rentalBadge||privateUseBadge||roomTypeBadge?`<div style="display:flex;gap:4px;flex-wrap:wrap">${complexBadge}${privateBadge}${rentalBadge}${privateUseBadge}${roomTypeBadge}</div>`:''}
+    ${complexBadge||rentalBadge||privateUseBadge||roomTypeBadge?`<div style="display:flex;gap:4px;flex-wrap:wrap">${complexBadge}${rentalBadge}${privateUseBadge}${roomTypeBadge}</div>`:''}
   </div>`;
 }
 
@@ -848,6 +845,13 @@ function openP(f){
   const dp=document.getElementById('dp');dp.classList.add('open');
   document.getElementById('dpt').textContent=f.useDetail;
   document.getElementById('dpn').textContent=f.name;
+  const dpNaming=document.getElementById('dpNaming');
+  if(f.namingRights){
+    dpNaming.style.display='';
+    dpNaming.textContent=`（${f.namingRights}）`;
+  }else{
+    dpNaming.style.display='none';
+  }
   document.getElementById('dpCityBadge').style.display=CITY_NURSERIES_35.has(f.name)?'':'none';
   document.getElementById('dpa').textContent='📍 '+f.addr;
   const age=f.year?2026-f.year:null;
@@ -864,7 +868,10 @@ function openP(f){
   const rts=ROOM_TYPE_STYLE[f.roomType];
   if(rts){
     roomTypeSec.style.display='';
-    document.getElementById('roomTypeBody').innerHTML=`<span style="font-size:11px;font-weight:700;padding:3px 8px;border-radius:4px;background:${rts.bg};color:${rts.fg};border:1px solid ${rts.bd};white-space:nowrap">${rts.icon} ${f.roomType}</span>`;
+    document.getElementById('roomTypeBody').innerHTML=`
+      <span style="font-size:11px;font-weight:700;padding:3px 8px;border-radius:4px;background:${rts.bg};color:${rts.fg};border:1px solid ${rts.bd};white-space:nowrap">${rts.icon} ${f.roomType}</span>
+      ${f.roomDetail?`<div style="font-size:12px;line-height:1.6;color:var(--ink);margin-top:6px">${f.roomDetail}</div>`:''}
+    `;
   }else{
     roomTypeSec.style.display='none';
   }
@@ -1523,6 +1530,8 @@ function updateDash(data){
 
 // ── 更新情報 ──
 const UPDATE_HISTORY=[
+  {date:'2026-07-07',text:'区役所附設会館のうちネーミングライツが導入されている12施設について、詳細パネルの施設名称下にライツ名を表示'},
+  {date:'2026-07-07',text:'区役所附設会館33件を「ホール＋会議室」「ホールのみ」「会議室のみ」に分類し、タグと室の構成（部屋名一覧）を詳細パネルに追加'},
   {date:'2026-07-05',text:'指定管理ではなく実質民間が事業運営している市有福祉施設13件に「🏠 民間使用」バッジと詳細解説を追加'},
   {date:'2026-06-29',text:'用途地域・容積率リンク、その他地域地区リンクを詳細パネルに追加'},
   {date:'2026-06-29',text:'図書館フィルターを「地域図書館」「中央図書館」に統合'},
