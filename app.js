@@ -34,6 +34,11 @@ const UB={
   '庁舎・事務所':'#daf0f0','インフラ':'#fff0dd',
   'その他':'#eee','もと施設':'#f0e8ff','流通産業':'#fff5dd'
 };
+const ROOM_TYPE_STYLE={
+  'ホール＋会議室':{icon:'🎭🗂',bg:'#e6f7f7',fg:'#0f7a7a',bd:'#a0d8d8'},
+  'ホールのみ':{icon:'🎭',bg:'#f0edfc',fg:'#5b3fa8',bd:'#c3b3ea'},
+  '会議室のみ':{icon:'🗂',bg:'#eafaf0',fg:'#1e824c',bd:'#a8dfc0'}
+};
 
 const BASE='https://www.city.osaka.lg.jp/shiseikaikakushitsu/cmsfiles/contents/0000619/619708/';
 const BASE_KARTE=BASE; // カルテも同じベースURL
@@ -738,6 +743,8 @@ function renderCard(f){
   const privateBadge=hasPrivate?`<span style="font-size:10px;font-weight:700;padding:2px 6px;border-radius:4px;background:#fff8f0;color:#d4670a;border:1px solid #ffd0a0;white-space:nowrap">🏪 民間複合</span>`:'';
   const rentalBadge=f.isRental?`<span style="font-size:10px;font-weight:700;padding:2px 6px;border-radius:4px;background:#f0f4ff;color:#2255cc;border:1px solid #aabcee;white-space:nowrap">🔑 賃借</span>`:'';
   const privateUseBadge=f.privateUse?`<span style="font-size:10px;font-weight:700;padding:2px 6px;border-radius:4px;background:#fdf0f6;color:#b8266b;border:1px solid #f0b8d0;white-space:nowrap">🏠 民間使用</span>`:'';
+  const rts=ROOM_TYPE_STYLE[f.roomType];
+  const roomTypeBadge=rts?`<span style="font-size:10px;font-weight:700;padding:2px 6px;border-radius:4px;background:${rts.bg};color:${rts.fg};border:1px solid ${rts.bd};white-space:nowrap">${rts.icon} ${f.roomType}</span>`:'';
   if(state.view==='list'){
     return `<div class="card${chk?' sel-active':''}" data-id="${f.id}" onclick="selF(${f.id})" style="padding:10px 14px;--uc:${c}">
       <div class="cli">
@@ -745,7 +752,7 @@ function renderCard(f){
         <div style="width:4px;height:36px;background:${c};border-radius:2px;flex-shrink:0"></div>
         <div class="cln">${f.name}<br><span style="font-size:10px;font-weight:400;color:var(--muted)">${f.addr}</span></div>
         <div class="clm">
-          ${complexBadge}${privateBadge}${rentalBadge}${privateUseBadge}
+          ${complexBadge}${privateBadge}${rentalBadge}${privateUseBadge}${roomTypeBadge}
           <div class="cls"><strong>${f.area>0?f.area.toLocaleString():'—'}</strong>㎡</div>
           <div class="cls"><strong>${f.year||'—'}</strong>年</div>
           <span class="tag tw" style="align-self:center">${f.ward}</span>
@@ -769,11 +776,11 @@ function renderCard(f){
       <div class="ct" style="background:${b};color:${c};flex-shrink:0">${f.use}</div>
     </div>
     <div class="ca" style="margin-bottom:6px"><span>📍</span>${f.addr}</div>
-    <div class="cs" style="margin-bottom:${complexBadge||privateBadge||rentalBadge||privateUseBadge?'6px':'0'}">
+    <div class="cs" style="margin-bottom:${complexBadge||privateBadge||rentalBadge||privateUseBadge||roomTypeBadge?'6px':'0'}">
       <div><div class="sv">${f.area>0?f.area.toLocaleString():'—'}</div><div class="su">延床面積（㎡）</div></div>
       <div><div class="sv">${age!==null?`築${age}年`:'—'}</div><div class="su">${f.year?`${f.year}年度築`:''}</div></div>
     </div>
-    ${complexBadge||privateBadge||rentalBadge||privateUseBadge?`<div style="display:flex;gap:4px;flex-wrap:wrap">${complexBadge}${privateBadge}${rentalBadge}${privateUseBadge}</div>`:''}
+    ${complexBadge||privateBadge||rentalBadge||privateUseBadge||roomTypeBadge?`<div style="display:flex;gap:4px;flex-wrap:wrap">${complexBadge}${privateBadge}${rentalBadge}${privateUseBadge}${roomTypeBadge}</div>`:''}
   </div>`;
 }
 
@@ -853,6 +860,14 @@ function openP(f){
     <div><div class="dpi-l">所管局</div><div class="dpi-v" style="font-size:12px">${bureau}</div></div>
     <div><div class="dpi-l">管理者詳細</div><div class="dpi-v" style="font-size:11px;line-height:1.4">${f.manager}</div></div>
   `;
+  const roomTypeSec=document.getElementById('roomTypeSec');
+  const rts=ROOM_TYPE_STYLE[f.roomType];
+  if(rts){
+    roomTypeSec.style.display='';
+    document.getElementById('roomTypeBody').innerHTML=`<span style="font-size:11px;font-weight:700;padding:3px 8px;border-radius:4px;background:${rts.bg};color:${rts.fg};border:1px solid ${rts.bd};white-space:nowrap">${rts.icon} ${f.roomType}</span>`;
+  }else{
+    roomTypeSec.style.display='none';
+  }
   const a=encodeURIComponent(f.addr),n=encodeURIComponent(f.name);
   const webUrl=f.url||`https://www.google.com/search?q=${n}+%E5%85%AC%E5%BC%8F%E3%82%B5%E3%82%A4%E3%83%88`;
   const webLabel=f.url?'🌐 公式サイト':'🌐 公式サイトを検索';
